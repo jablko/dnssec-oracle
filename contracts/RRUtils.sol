@@ -16,7 +16,11 @@ library RRUtils {
     * @param offset The offset to start reading at.
     * @return The length of the DNS name at 'offset', in bytes.
     */
-    function nameLength(bytes memory self, uint offset) internal pure returns(uint) {
+    function nameLength(bytes memory self, uint offset)
+        internal
+        pure
+        returns (uint)
+    {
         uint idx = offset;
         while (true) {
             assert(idx < self.length);
@@ -35,7 +39,11 @@ library RRUtils {
     * @param offset The offset to start reading at.
     * @return The name.
     */
-    function readName(bytes memory self, uint offset) internal pure returns(bytes memory ret) {
+    function readName(bytes memory self, uint offset)
+        internal
+        pure
+        returns (bytes memory ret)
+    {
         uint len = nameLength(self, offset);
         return self.substring(offset, len);
     }
@@ -46,7 +54,11 @@ library RRUtils {
     * @param offset The offset to start reading at.
     * @return The number of labels in the DNS name at 'offset', in bytes.
     */
-    function labelCount(bytes memory self, uint offset) internal pure returns(uint) {
+    function labelCount(bytes memory self, uint offset)
+        internal
+        pure
+        returns (uint)
+    {
         uint count = 0;
         while (true) {
             assert(offset < self.length);
@@ -79,7 +91,11 @@ library RRUtils {
     * @param offset The offset to start reading at.
     * @return An iterator object.
     */
-    function iterateRRs(bytes memory self, uint offset) internal pure returns (RRIterator memory ret) {
+    function iterateRRs(bytes memory self, uint offset)
+        internal
+        pure
+        returns (RRIterator memory ret)
+    {
         ret.data = self;
         ret.nextOffset = offset;
         next(ret);
@@ -90,7 +106,7 @@ library RRUtils {
     * @param iter The iterator to check.
     * @return True iff the iterator has finished.
     */
-    function done(RRIterator memory iter) internal pure returns(bool) {
+    function done(RRIterator memory iter) internal pure returns (bool) {
         return iter.offset >= iter.data.length;
     }
 
@@ -127,8 +143,12 @@ library RRUtils {
     * @param iter The iterator.
     * @return A new bytes object containing the owner name from the RR.
     */
-    function name(RRIterator memory iter) internal pure returns(bytes memory) {
-        return iter.data.substring(iter.offset, nameLength(iter.data, iter.offset));
+    function name(RRIterator memory iter) internal pure returns (bytes memory) {
+        return
+            iter.data.substring(
+                iter.offset,
+                nameLength(iter.data, iter.offset)
+            );
     }
 
     /**
@@ -136,8 +156,16 @@ library RRUtils {
     * @param iter The iterator.
     * @return A new bytes object containing the RR's RDATA.
     */
-    function rdata(RRIterator memory iter) internal pure returns(bytes memory) {
-        return iter.data.substring(iter.rdataOffset, iter.nextOffset - iter.rdataOffset);
+    function rdata(RRIterator memory iter)
+        internal
+        pure
+        returns (bytes memory)
+    {
+        return
+            iter.data.substring(
+                iter.rdataOffset,
+                iter.nextOffset - iter.rdataOffset
+            );
     }
 
     /**
@@ -147,11 +175,16 @@ library RRUtils {
     * @param rrtype The RR type to check for.
     * @return True if the type is found in the bitmap, false otherwise.
     */
-    function checkTypeBitmap(bytes memory self, uint offset, uint16 rrtype) internal pure returns (bool) {
+    function checkTypeBitmap(bytes memory self, uint offset, uint16 rrtype)
+        internal
+        pure
+        returns (bool)
+    {
         uint8 typeWindow = uint8(rrtype >> 8);
         uint8 windowByte = uint8((rrtype & 0xff) / 8);
-        uint8 windowBitmask = uint8(uint8(1) << (uint8(7) - uint8(rrtype & 0x7)));
-        for (uint off = offset; off < self.length;) {
+        uint8 windowBitmask =
+            uint8(uint8(1) << (uint8(7) - uint8(rrtype & 0x7)));
+        for (uint off = offset; off < self.length; ) {
             uint8 window = self.readUint8(off);
             uint8 len = self.readUint8(off + 1);
             if (typeWindow < window) {
@@ -163,7 +196,8 @@ library RRUtils {
                     // Our type is past the end of the bitmap
                     return false;
                 }
-                return (self.readUint8(off + windowByte + 2) & windowBitmask) != 0;
+                return
+                    (self.readUint8(off + windowByte + 2) & windowBitmask) != 0;
             } else {
                 // Skip this type bitmap
                 off += len + 2;
@@ -173,7 +207,11 @@ library RRUtils {
         return false;
     }
 
-    function compareNames(bytes memory self, bytes memory other) internal pure returns (int) {
+    function compareNames(bytes memory self, bytes memory other)
+        internal
+        pure
+        returns (int)
+    {
         if (self.equals(other)) {
             return 0;
         }
@@ -210,14 +248,25 @@ library RRUtils {
         if (off == 0) {
             return -1;
         }
-        if(otheroff == 0) {
+        if (otheroff == 0) {
             return 1;
         }
 
-        return self.compare(prevoff + 1, self.readUint8(prevoff), other, otherprevoff + 1, other.readUint8(otherprevoff));
+        return
+            self.compare(
+                prevoff + 1,
+                self.readUint8(prevoff),
+                other,
+                otherprevoff + 1,
+                other.readUint8(otherprevoff)
+            );
     }
 
-    function progress(bytes memory body, uint off) internal pure returns(uint) {
+    function progress(bytes memory body, uint off)
+        internal
+        pure
+        returns (uint)
+    {
         return off + 1 + body.readUint8(off);
     }
 }
